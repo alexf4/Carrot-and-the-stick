@@ -1,0 +1,228 @@
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+  transition: color 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.back:hover {
+  color: var(--text-secondary);
+}
+
+.backArrow {
+  font-size: 0.9rem;
+}
+
+.hero {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  padding: 1.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.heroPhoto {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+}
+
+.heroPhotoPlaceholder {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.heroInfo {
+  flex: 1;
+}
+
+.heroBadges {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.partyBadge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.55rem;
+  border-radius: 99px;
+}
+
+.partyBadge[data-party="D"] {
+  background: var(--party-d-dim);
+  color: var(--party-d);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.partyBadge[data-party="R"] {
+  background: var(--party-r-dim);
+  color: var(--party-r);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+.partyBadge[data-party="I"],
+.partyBadge[data-party="ID"],
+.partyBadge[data-party="L"] {
+  background: var(--party-i-dim);
+  color: var(--party-i);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+}
+
+.chamberBadge {
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+.heroName {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+  line-height: 1.15;
+}
+
+.heroMeta {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.pledgeSummary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.pledgeCard {
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid;
+  position: relative;
+  overflow: hidden;
+}
+
+.pledgeCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.02), transparent);
+  pointer-events: none;
+}
+
+.pledgeCardCarrot {
+  background: var(--carrot-dim);
+  border-color: var(--carrot-border);
+}
+
+.pledgeCardStick {
+  background: var(--stick-dim);
+  border-color: var(--stick-border);
+}
+
+.pledgeLabel {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+
+.pledgeLabelCarrot {
+  color: var(--carrot);
+}
+
+.pledgeLabelStick {
+  color: var(--stick);
+}
+
+.pledgeAmount {
+  font-family: var(--font-mono);
+  font-size: 1.75rem;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.pledgeAmountCarrot {
+  color: var(--carrot);
+}
+
+.pledgeAmountStick {
+  color: var(--stick);
+}
+
+.pledgeSubtext {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.3rem;
+}
+
+.sectionHeading {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+
+@media (max-width: 600px) {
+  .pledgeSummary {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .heroBadges {
+    justify-content: center;
+  }
+}

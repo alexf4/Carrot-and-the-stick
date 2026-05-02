@@ -1,0 +1,134 @@
+.empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 2rem 0;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table thead tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.table th.right {
+  text-align: right;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+
+.table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.table tbody tr:hover {
+  background: var(--surface-2);
+}
+
+.table td {
+  padding: 0.85rem 1rem;
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+
+.billTitle {
+  color: var(--text-primary);
+  font-weight: 500;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.date {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.outcomeBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.6rem;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+
+.outcomeBadge[data-outcome="yes"] {
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--outcome-yes);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.outcomeBadge[data-outcome="no"] {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--outcome-no);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.outcomeBadge[data-outcome="absent"] {
+  background: rgba(107, 114, 128, 0.12);
+  color: var(--outcome-absent);
+  border: 1px solid rgba(107, 114, 128, 0.25);
+}
+
+.outcomeBadge[data-outcome="present"] {
+  background: rgba(234, 179, 8, 0.12);
+  color: var(--outcome-present);
+  border: 1px solid rgba(234, 179, 8, 0.25);
+}
+
+.outcomeBadge[data-outcome="pending"] {
+  background: var(--surface-2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.money {
+  font-family: var(--font-mono);
+  font-size: 0.83rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.moneyCarrot {
+  color: var(--carrot);
+}
+
+.moneyStick {
+  color: var(--stick);
+}
+
+.moneyZero {
+  color: var(--text-muted);
+}
