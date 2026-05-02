@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools>=68"]
-build-backend = "setuptools.backends.legacy:build"
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "carrot-and-the-stick"
@@ -9,6 +9,10 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "python-dotenv>=1.0",
+    "supabase>=2.0",
 ]
 
 [project.optional-dependencies]
@@ -19,13 +23,17 @@ dev = [
     "mypy>=1.10",
 ]
 
+[tool.setuptools.packages.find]
+include = ["app*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
 
 [tool.ruff]
-line-length = 88
+line-length = 120
 target-version = "py312"
+exclude = ["alembic/"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
@@ -33,3 +41,4 @@ select = ["E", "F", "I"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
+exclude = ["alembic/"]
