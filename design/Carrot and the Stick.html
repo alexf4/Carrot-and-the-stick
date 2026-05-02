@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carrot and the Stick — Design Exploration</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0e1a; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+
+  /* ── Design tokens ── */
+  :root {
+    --navy:    #0d1224;
+    --navy-2:  #141929;
+    --navy-3:  #1c2340;
+    --navy-4:  #232b4d;
+    --carrot:  oklch(70% 0.19 52);
+    --stick:   oklch(58% 0.22 18);
+    --held:    oklch(60% 0.06 230);
+    --text:    oklch(93% 0.01 240);
+    --muted:   oklch(65% 0.02 240);
+    --divider: oklch(30% 0.04 240);
+    --card-bg: #161d35;
+  }
+
+  /* ── Phone shell ── */
+  .phone {
+    width: 375px;
+    min-height: 812px;
+    background: var(--navy);
+    border-radius: 44px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px oklch(35% 0.05 240);
+  }
+  .phone-inner {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Status bar ── */
+  .status-bar {
+    height: 44px;
+    padding: 14px 24px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    flex-shrink: 0;
+  }
+  .status-bar .time { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+  .status-icons { display: flex; gap: 6px; align-items: center; }
+
+  /* ── Nav bar ── */
+  .nav-bar {
+    height: 56px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--divider);
+  }
+  .nav-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .nav-logo {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .nav-logo span.c { color: var(--carrot); }
+  .nav-logo span.s { color: var(--stick); }
+  .nav-back {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 15px;
+    color: var(--carrot);
+    font-weight: 500;
+  }
+
+  /* ── Scrollable content ── */
+  .scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .scroll-area::-webkit-scrollbar { display: none; }
+
+  /* ── Typography ── */
+  .label-xs { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .label-sm { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .body-sm { font-size: 13px; line-height: 1.5; color: var(--muted); }
+  .body-md { font-size: 15px; line-height: 1.55; color: var(--text); }
+  .heading { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: var(--text); }
+  .subheading { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; color: var(--text); }
+
+  /* ── Chips / badges ── */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .chip-yes    { background: oklch(70% 0.19 52 / 0.18); color: var(--carrot); }
+  .chip-no     { background: oklch(58% 0.22 18 / 0.18); color: var(--stick); }
+  .chip-absent { background: oklch(60% 0.06 230 / 0.18); color: var(--held); }
+  .chip-present{ background: oklch(70% 0.12 100 / 0.18); color: oklch(70% 0.12 100); }
+  .chip-held   { background: oklch(60% 0.06 230 / 0.18); color: var(--held); }
+  .chip-d      { background: rgba(66,133,244,0.18); color: #5b9cf6; }
+  .chip-r      { background: rgba(220,60,60,0.15); color: #e07070; }
+  .chip-i      { background: rgba(180,130,200,0.15); color: #c9a0e0; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--divider);
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    border: none;
+    border-radius: 12px;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: opacity 0.15s;
+  }
+  .btn:active { opacity: 0.8; }
+  .btn-primary {
+    background: var(--carrot);
+    color: #fff;
+    font-size: 17px;
+    padding: 16px 24px;
+    width: 100%;
+    border-radius: 14px;
+  }
+  .btn-stick {
+    background: var(--stick);
+    color: #fff;
+    font-size: 17px;
+    padding: 16px 24px;
+    width: 100%;
+    border-radius: 14px;
+  }
+  .btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--divider);
+    color: var(--text);
+    font-size: 15px;
+    padding: 12px 20px;
+  }
+  .btn-sm {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 10px;
+    background: var(--carrot);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-sm-outline {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 7px 15px;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--carrot);
+    border: 1.5px solid var(--carrot);
+    cursor: pointer;
+  }
+
+  /* ── Rep avatar ── */
+  .rep-avatar {
+    border-radius: 50%;
+    background: var(--navy-4);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .rep-avatar svg { opacity: 0.4; }
+
+  /* ── Amount display ── */
+  .amount-display {
+    font-size: 56px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    color: var(--text);
+    text-align: center;
+    line-height: 1;
+  }
+  .amount-display .currency {
+    font-size: 28px;
+    font-weight: 700;
+    vertical-align: super;
+    letter-spacing: 0;
+    margin-right: 2px;
+    color: var(--muted);
+  }
+
+  /* ── Toggle direction ── */
+  .direction-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .dir-btn {
+    border-radius: 14px;
+    padding: 18px 12px;
+    border: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--navy-3);
+  }
+  .dir-btn.active-yes {
+    background: oklch(70% 0.19 52 / 0.15);
+    border-color: var(--carrot);
+  }
+  .dir-btn.active-no {
+    background: oklch(58% 0.22 18 / 0.15);
+    border-color: var(--stick);
+  }
+  .dir-label {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .dir-sublabel {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* ── Pool bar ── */
+  .pool-bar-track {
+    height: 6px;
+    background: var(--navy-3);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .pool-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+  }
+
+  /* ── Bottom tab bar ── */
+  .tab-bar {
+    height: 82px;
+    padding: 10px 0 20px;
+    border-top: 1px solid var(--divider);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+    flex-shrink: 0;
+    background: var(--navy);
+  }
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+  }
+  .tab-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+  .tab-label { font-size: 10px; font-weight: 600; color: var(--muted); }
+  .tab-item.active .tab-label { color: var(--carrot); }
+  .tab-item.active .tab-icon svg { stroke: var(--carrot); }
+
+  /* ── Input fields ── */
+  .input-field {
+    width: 100%;
+    background: var(--navy-3);
+    border: 1.5px solid var(--divider);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-family: inherit;
+    font-size: 16px;
+    color: var(--text);
+    outline: none;
+  }
+  .input-field:focus { border-color: var(--carrot); }
+  .input-field::placeholder { color: var(--muted); }
+
+  /* ── Progress dots ── */
+  .progress-dots {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--divider);
+  }
+  .dot.active { background: var(--carrot); width: 20px; border-radius: 100px; }
+
+  /* ── Vote row ── */
+  .vote-row {
+    padding: 16px;
+    border-bottom: 1px solid var(--divider);
+  }
+  .vote-row:last-child { border-bottom: none; }
+
+  /* ── Success icon ── */
+  .success-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: oklch(70% 0.19 52 / 0.15);
+    border: 2px solid var(--carrot);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    margin: 0 auto;
+  }
+
+  /* ── Verification tier badge ── */
+  .tier-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 700;
+    background: oklch(60% 0.06 230 / 0.18);
+    color: var(--held);
+    border: 1px solid oklch(60% 0.06 230 / 0.4);
+  }
+
+  /* ── Divider ── */
+  .h-divider { height: 1px; background: var(--divider); margin: 0; }
+
+  /* ── Email template styles ── */
+  .email-wrap {
+    background: #f4f5f7;
+    min-height: 812px;
+    display: flex;
+    flex-direction: column;
+  }
+  .email-header {
+    background: var(--navy);
+    padding: 24px 20px 20px;
+    text-align: center;
+  }
+  .email-body { padding: 24px 20px; flex: 1; }
+  .email-cta-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .email-btn-carrot {
+    background: var(--carrot);
+    color: #fff;
+    padding: 14px 12px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 15px;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+  }
+  .email-btn-stick {
+    background: var(--stick);
+    color: #fff;
+    padding: 14px 12px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 15px;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+  }
+
+  /* ── Style guide ── */
+  .swatch { width: 100%; height: 52px; border-radius: 10px; }
+  .type-row { padding: 8px 0; border-bottom: 1px solid var(--divider); }
+</style>
+</head>
+<body>
+<script type="text/babel">
+const { useState } = React;
+
+/* ──────────────────────────────────────────
+   SHARED PRIMITIVES
+────────────────────────────────────────── */
+function PersonIcon({ size = 40 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+      <circle cx="20" cy="14" r="8" fill="oklch(65% 0.04 240)"/>
+      <path d="M4 38c0-8.837 7.163-16 16-16s16 7.163 16 16" fill="oklch(65% 0.04 240)"/>
+    </svg>
+  );
+}
+
+function RepAvatar({ size = 56, initials = "MS" }) {
+  return (
+    <div className="rep-avatar" style={{ width: size, height: size }}>
+      <PersonIcon size={size * 0.9} />
+    </div>
+  );
+}
+
+function StatusBar() {
+  return (
+    <div className="status-bar">
+      <span className="time">9:41</span>
+      <div className="status-icons">
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="none">
+          <rect x="0" y="4" width="3" height="8" rx="1" fill="white" opacity="0.4"/>
+          <rect x="4.5" y="2.5" width="3" height="9.5" rx="1" fill="white" opacity="0.6"/>
+          <rect x="9" y="0.5" width="3" height="11.5" rx="1" fill="white" opacity="0.8"/>
+          <rect x="13.5" y="0" width="3" height="12" rx="1" fill="white"/>
+        </svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+          <path d="M8 2.4C10.3 2.4 12.4 3.4 13.8 5L15.5 3.2C13.6 1.2 11 0 8 0 5 0 2.4 1.2.5 3.2L2.2 5C3.6 3.4 5.7 2.4 8 2.4Z" fill="white" opacity="0.6"/>
+          <path d="M8 5.8C9.5 5.8 10.8 6.4 11.8 7.4L13.5 5.6C12 4.1 10.1 3.2 8 3.2 5.9 3.2 4 4.1 2.5 5.6L4.2 7.4C5.2 6.4 6.5 5.8 8 5.8Z" fill="white" opacity="0.8"/>
+          <circle cx="8" cy="11" r="1.5" fill="white"/>
+        </svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none">
+          <rect x="0.5" y="0.5" width="20" height="11" rx="3.5" stroke="white" strokeOpacity="0.35"/>
+          <rect x="2" y="2" width="16" height="8" rx="2" fill="white"/>
+          <path d="M23 4.5V7.5C23.8 7.2 24.5 6.5 24.5 6C24.5 5.5 23.8 4.8 23 4.5Z" fill="white" fillOpacity="0.4"/>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function NavBar({ title, showBack = false, showLogo = false }) {
+  return (
+    <div className="nav-bar">
+      {showBack ? (
+        <div className="nav-back">
+          <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
+            <path d="M8.5 1L1.5 8L8.5 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Back
+        </div>
+      ) : <div style={{width: 60}}/>}
+      {showLogo ? (
+        <div className="nav-logo">
+          <span className="c">C</span>&amp;<span className="s">S</span>
+        </div>
+      ) : (
+        <div className="nav-title">{title}</div>
+      )}
+      <div style={{width: 60}}/>
+    </div>
+  );
+}
+
+function TabBar({ active = "explore" }) {
+  const tabs = [
+    { id: "explore", label: "Explore", icon: <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="11" cy="11" r="9"/><path d="M14.5 7.5L12.5 12.5L7.5 14.5L9.5 9.5Z"/></svg> },
+    { id: "pledges", label: "My Pledges", icon: <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><rect x="3" y="3" width="16" height="16" rx="3"/><path d="M7 11L10 14L15 8"/></svg> },
+    { id: "account", label: "Account", icon: <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="11" cy="8" r="3.5"/><path d="M3.5 19c0-4.142 3.358-7.5 7.5-7.5s7.5 3.358 7.5 7.5"/></svg> },
+  ];
+  return (
+    <div className="tab-bar">
+      {tabs.map(t => (
+        <div key={t.id} className={`tab-item${t.id === active ? " active" : ""}`}>
+          <div className="tab-icon" style={{ color: t.id === active ? "var(--carrot)" : "var(--muted)" }}>{t.icon}</div>
+          <span className="tab-label">{t.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function PoolNumbers({ carrot = "$24,180", stick = "$18,450" }) {
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div className="card" style={{ padding: "14px 16px" }}>
+        <div className="label-xs" style={{ marginBottom: 6 }}>🥕 Carrot Pool</div>
+        <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-0.5px", color: "var(--carrot)" }}>{carrot}</div>
+      </div>
+      <div className="card" style={{ padding: "14px 16px" }}>
+        <div className="label-xs" style={{ marginBottom: 6 }}>🪄 Stick Pool</div>
+        <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-0.5px", color: "var(--stick)" }}>{stick}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────
+   SCREEN 1 — PUBLIC REP DASHBOARD
+────────────────────────────────────────── */
+function RepDashboard() {
+  const [expanded, setExpanded] = useState(null);
+
+  const votes = [
+    {
+      id: 1,
+      bill: "H.R. 4521 — CHIPS and Science Act",
+      summary: "Authorizes $52B in federal subsidies for domestic semiconductor manufacturing. Proponents argue it addresses supply chain vulnerabilities exposed by COVID-19 shortages. Critics say corporate welfare overshadows actual workforce investment.",
+      date: "Jun 12, 2026",
+      outcome: "YES",
+      carrot: "$8,420",
+      stick: "$5,110",
+      scheduled: false,
+    },
+    {
+      id: 2,
+      bill: "S. 2038 — Clean Energy Transition Act",
+      summary: "Mandates 80% clean electricity by 2035 with federal incentives for grid upgrades. The bill includes $30B for utility-scale battery storage and offshore wind development. A carve-out for nuclear energy proved contentious among environmental groups.",
+      date: "Jul 8, 2026",
+      outcome: null,
+      carrot: "$12,300",
+      stick: "$9,870",
+      scheduled: true,
+    },
+    {
+      id: 3,
+      bill: "H.R. 7732 — Social Security Adjustment Act",
+      summary: "Raises the Social Security full retirement age from 67 to 68 for those born after 1970. Benefit formula adjustments would reduce average monthly payments by an estimated $43. Means-testing provisions would cut off benefits for households earning above $150K.",
+      date: "Aug 2, 2026",
+      outcome: "NO",
+      carrot: "$3,460",
+      stick: "$13,200",
+      scheduled: false,
+    },
+  ];
+
+  const outcomeChip = (outcome, scheduled) => {
+    if (scheduled) return <span className="chip chip-held">Upcoming</span>;
+    if (outcome === "YES") return <span className="chip chip-yes">YES</span>;
+    if (outcome === "NO") return <span className="chip chip-no">NO</span>;
+    if (outcome === "ABSENT") return <span className="chip chip-absent">ABSENT</span>;
+    if (outcome === "PRESENT") return <span className="chip chip-present">PRESENT</span>;
+    return null;
+  };
+
+  return (
+    <div className="phone">
+      <StatusBar/>
+      <NavBar showLogo/>
+      <div className="scroll-area">
+        {/* Rep header */}
+        <div style={{ padding: "20px 20px 0" }}>
+          <div style={{ display: "flex", gap: 16, alignItems: "flex-start", marginBottom: 16 }}>
+            <RepAvatar size={72}/>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
+                <span className="chip chip-d">D</span>
+                <span className="chip chip-held">Senate</span>
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.4px", color: "var(--text)", lineHeight: 1.2, marginBottom: 2 }}>
+                Maria Santos
+              </div>
+              <div className="body-sm">California · District 12</div>
+            </div>
+          </div>
+          <PoolNumbers/>
+          <div style={{ marginTop: 10 }}>
+            <div className="pool-bar-track">
+              <div className="pool-bar-fill" style={{ width: "57%", background: "linear-gradient(90deg, var(--carrot), var(--carrot) 57%, var(--stick) 57%)" }}/>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: 5 }}>
+              <span className="label-xs" style={{ color: "var(--carrot)" }}>57% Carrot</span>
+              <span className="label-xs" style={{ color: "var(--stick)" }}>43% Stick</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Vote history */}
+        <div style={{ padding: "20px 20px 8px" }}>
+          <div className="label-xs">Vote History</div>
+        </div>
+        <div className="card" style={{ margin: "0 20px 24px", padding: 0 }}>
+          {votes.map((v, i) => (
+            <div key={v.id} className="vote-row">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", lineHeight: 1.35, marginBottom: 4 }}>{v.bill}</div>
+                  <div className="label-xs" style={{ color: "var(--muted)" }}>{v.date}</div>
+                </div>
+                {outcomeChip(v.outcome, v.scheduled)}
+              </div>
+              {/* Summary */}
+              <div style={{ marginBottom: 10 }}>
+                <div className="body-sm" style={{ display: expanded === v.id ? "block" : "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                  {v.summary}
+                </div>
+                <button onClick={() => setExpanded(expanded === v.id ? null : v.id)} style={{ background: "none", border: "none", color: "var(--carrot)", fontSize: 12, fontWeight: 700, cursor: "pointer", padding: "4px 0 0", fontFamily: "inherit" }}>
+                  {expanded === v.id ? "Show less ↑" : "Read more ↓"}
+                </button>
+              </div>
+              {/* Pool mini */}
+              <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--carrot)" }}>🥕 {v.carrot}</span>
+                <span style={{ color: "var(--divider)" }}>·</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "var(--stick)" }}>🪄 {v.stick}</span>
+              </div>
+              <button className="btn-sm">Pledge</button>
+            </div>
+          ))}
+        </div>
+      </div>
+      <TabBar active="explore"/>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────
+   SCREEN 2 — PLEDGE FLOW
+────────────────────────────────────────── */
+function PledgeForm() {
+  const [direction, setDirection] = useState("YES");
+  const [amount, setAmount] = useState("25");
+
+  const rep = { name: "Maria Santos" };
+  const bill = "S. 2038 — Clean Energy Transition Act";
+
+  const preview = direction === "YES"
+    ? `If Santos votes YES → 🥕 Carrot. If they vote NO/absent → 🪄 Stick.`
+    : `If Santos votes NO → 🥕 Carrot. If they vote YES/absent → 🪄 Stick.`;
+
+  return (
+    <div className="phone">
+      <StatusBar/>
+      <NavBar title="Make a Pledge" showBack/>
+      <div className="scroll-area">
+        <div style={{ padding: "20px 20px 32px", display: "flex", flexDirection: "column", gap: 20 }}>
+          {/* Progress */}
+          <div className="progress-dots">
+            <div className="dot active"/>
+            <div className="dot"/>
+            <div className="dot"/>
+          </div>
+
+          {/* Bill info */}
+          <div className="card" style={{ padding: 16 }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 10 }}>
+              <RepAvatar size={40} initials="MS"/>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>Maria Santos</div>
+                <div className="label-sm">CA · Senate</div>
+              </div>
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", marginBottom: 6 }}>{bill}</div>
+            <div className="body-sm">Mandates 80% clean electricity by 2035 with federal incentives for grid upgrades. Includes $30B for battery storage. Nuclear energy carve-out proved contentious.</div>
+          </div>
+
+          {/* Direction */}
+          <div>
+            <div className="label-xs" style={{ marginBottom: 10 }}>I want her to vote</div>
+            <div className="direction-toggle">
+              <button
+                className={`dir-btn${direction === "YES" ? " active-yes" : ""}`}
+                onClick={() => setDirection("YES")}
+              >
+                <div className="dir-label" style={{ color: direction === "YES" ? "var(--carrot)" : "var(--muted)" }}>YES</div>
+                <div className="dir-sublabel" style={{ color: direction === "YES" ? "var(--carrot)" : "var(--muted)" }}>🥕 Carrot if right</div>
+              </button>
+              <button
+                className={`dir-btn${direction === "NO" ? " active-no" : ""}`}
+                onClick={() => setDirection("NO")}
+              >
+                <div className="dir-label" style={{ color: direction === "NO" ? "var(--stick)" : "var(--muted)" }}>NO</div>
+                <div className="dir-sublabel" style={{ color: direction === "NO" ? "var(--stick)" : "var(--muted)" }}>🪄 Stick if wrong</div>
+              </button>
+            </div>
+          </div>
+
+          {/* Amount */}
+          <div>
+            <div className="label-xs" style={{ marginBottom: 16 }}>Pledge Amount</div>
+            <div className="amount-display">
+              <span className="currency">$</span>
+              {amount}
+            </div>
+            {/* Quick amounts */}
+            <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 16 }}>
+              {["10", "25", "50", "100"].map(a => (
+                <button key={a} onClick={() => setAmount(a)} style={{
+                  padding: "8px 16px", borderRadius: "100px",
+                  background: amount === a ? "var(--carrot)" : "var(--navy-3)",
+                  color: amount === a ? "#fff" : "var(--muted)",
+                  border: "none", fontWeight: 700, fontSize: 14, cursor: "pointer",
+                  fontFamily: "inherit",
+                }}>${a}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* Preview */}
+          <div style={{ background: "var(--navy-3)", borderRadius: 12, padding: "12px 16px" }}>
+            <div className="label-xs" style={{ marginBottom: 6 }}>If this, then that</div>
+            <div className="body-sm" style={{ color: "var(--text)", lineHeight: 1.6 }}>{preview}</div>
+          </div>
+
+          <button className="btn btn-primary">Continue →</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PledgeConfirm() {
+  return (
+    <div className="phone">
+      <StatusBar/>
+      <NavBar title="Confirm Pledge" showBack/>
+      <div className="scroll-area">
+        <div style={{ padding: "20px 20px 32px", display: "flex", flexDirection: "column", gap: 20 }}>
+          <div className="progress-dots">
+            <div className="dot"/>
+            <div className="dot active"/>
+            <div className="dot"/>
+          </div>
+
+          {/* Summary card */}
+          <div className="card" style={{ padding: 20 }}>
+            <div style={{ display: "flex", gap: 14, alignItems: "center", marginBottom: 16 }}>
+              <RepAvatar size={48}/>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: 16, color: "var(--text)" }}>Maria Santos</div>
+                <div className="label-sm">CA · Senate</div>
+              </div>
+            </div>
+            <div className="h-divider" style={{ marginBottom: 16 }}/>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span className="label-sm">Bill</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", textAlign: "right", maxWidth: 200 }}>S. 2038 — Clean Energy</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span className="label-sm">Direction</span>
+                <span className="chip chip-yes">YES</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span className="label-sm">Amount</span>
+                <span style={{ fontSize: 18, fontWeight: 800, color: "var(--text)" }}>$25.00</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span className="label-sm">Status</span>
+                <span className="chip chip-held">Held</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Consequence */}
+          <div style={{ background: "var(--navy-3)", borderRadius: 14, padding: 16, borderLeft: "3px solid var(--carrot)" }}>
+            <div className="label-xs" style={{ marginBottom: 8 }}>Your pledge does this</div>
+            <div className="body-sm" style={{ color: "var(--text)", lineHeight: 1.7 }}>
+              Your <strong style={{ color: "var(--text)" }}>$25</strong> will support Santos's PAC if they vote <strong style={{ color: "var(--carrot)" }}>YES</strong>, or fund their opponent's PAC if they don't.
+            </div>
+          </div>
+
+          {/* Legal */}
+          <div className="body-sm" style={{ textAlign: "center", fontSize: 11 }}>
+            Funds disburse 60 days before election day. You may withdraw up to 48h before the vote.
+          </div>
+
+          <button className="btn btn-primary">Confirm &amp; Pay via Stripe</button>
+          <button className="btn btn-outline btn-sm" style={{ background: "none", color: "var(--muted)", fontSize: 13, border: "none", cursor: "pointer" }}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PledgeSuccess() {
+  return (
+    <div className="phone">
+      <StatusBar/>
+      <NavBar showLogo/>
+      <div className="scroll-area">
+        <div style={{ padding: "40px 20px 32px", display: "flex", flexDirection: "column", gap: 20, alignItems: "center" }}>
+          <div className="progress-dots">
+            <div className="dot"/>
+            <div className="dot"/>
+            <div className="dot active"/>
+          </div>
+          <div style={{ height: 16 }}/>
+          <div className="success-circle">🥕</div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-0.5px", color: "var(--text)", marginBottom: 8 }}>Pledge Active</div>
+            <div className="body-sm" style={{ color: "var(--muted)" }}>Your pledge is now Held. We'll notify you when Santos votes.</div>
+          </div>
+
+          <div className="card" style={{ padding: 18, width: "100%" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+              <span className="label-sm">Rep</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>Maria Santos</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+              <span className="label-sm">Bill</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", maxWidth: 180, textAlign: "right" }}>S. 2038 — Clean Energy</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+              <span className="label-sm">Direction</span>
+              <span className="chip chip-yes">YES</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
+              <span className="label-sm">Amount</span>
+              <span style={{ fontSize: 18, fontWeight: 800, color: "var(--carrot)" }}>$25.00</span>
+            </div>
+            <div className="h-divider" style={{ marginBottom: 12 }}/>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span className="label-sm">Expected vote</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>Jul 8, 2026</span>
+            </div>
+          </div>
+
+          <button className="btn btn-primary" style={{ marginTop: 4 }}>View My Pledges</button>
+        </div>
+      </div>
+      <TabBar active="pledges"/>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────
+   SCREEN 3 — AUTH / ONBOARDING
+────────────────────────────────────────── */
+function AuthMagicLink() {
+  return (
+    <div className="phone">
+      <StatusBar/>
+      <div className="scroll-area">
+        <div style={{ padding: "80px 32px 40px", display: "flex", flexDirection: "column", alignItems: "center", gap: 32, minHeight: 720 }}>
+          <div style={{ textAlign: "center" }}>
+            <div className="nav-logo" style={{ fontSize: 32, marginBottom: 16 }}>
+              <span className="c">Carrot</span> &amp; the <span className="s">Stick</span>
+            </div>
+            <div className="body-sm" style={{ fontSize: 15, color: "var(--muted)" }}>
+              The Venmo of political accountability.
+            </div>
+          </div>
+
+          <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 12 }}>
+            <div className="label-xs" style={{ marginBottom: 4 }}>Your email</div>
+            <input className="input-field" type="email" placeholder="you@example.com" style={{ fontSize: 18 }}/>
+            <button className="btn btn-primary">Send Magic Link</button>
+          </div>
+
+          <div className="body-sm" style={{ textAlign: "center", fontSize: 12, maxWidth: 260 }}>
+            No password. We'll email you a one-tap sign-in link. 
+          </div>
+          
+          <div style={{ marginTop: "auto" }}>
+            <div className="body-sm" style={{ textAlign: "center", fontSize: 11 }}>
+              By continuing you agree to our Terms of Service and Privacy Policy.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AuthZip() {
+  return (
+    <div className="phone">
+      <StatusBar/>
+      <NavBar showLogo/>
+      <div className="scroll-area">
+        <div style={{ padding: "60px 32px 40px", display: "flex", flexDirection: "column", alignItems: "center", gap: 28, minHeight: 680 }}>
+          <div className="progress-dots">
+            <div className="dot"/>
+            <div className="dot active"/>
+            <div className="dot"/>
+          </div>
+
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.5px", color: "var(--text)", marginBottom: 8 }}>
+              What's your zip code?
+            </div>
+            <div className="body-sm" style={{ maxWidth: 260, margin: "0 auto" }}>
+              We use your zip code to match you to your representatives.
+            </div>
+          </div>
+
+          <input
+            className="input-field"
+            type="text"
+            placeholder="90210"
+            maxLength={5}
+            style={{ fontSize: 36, fontWeight: 800, textAlign: "center", letterSpacing: "0.15em", padding: "20px", borderRadius: 16 }}
+          />
+
+          <button className="btn btn-primary">Continue →</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AuthRepConfirm() {
+  const reps = [
+    { name: "Maria Santos", party: "D", chamber: "Senate", state: "CA" },
+    { name: "James Okafor", party: "R", chamber: "Senate", state: "CA" },
+    { name: "Linda Chen", party: "D", chamber: "House", state: "CA · Dist. 12" },
+  ];
+
+  return (
+    <div className="phone">
+      <StatusBar/>
+      <NavBar showLogo/>
+      <div className="scroll-area">
+        <div style={{ padding: "24px 20px 32px", display: "flex", flexDirection: "column", gap: 20 }}>
+          <div className="progress-dots">
+            <div className="dot"/>
+            <div className="dot"/>
+            <div className="dot active"/>
+          </div>
+          <div style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.4px", color: "var(--text)", marginBottom: 6 }}>
+              Your representatives
+            </div>
+            <div className="body-sm">Confirm these are correct for your district.</div>
+          </div>
+          {reps.map((r, i) => (
+            <div key={i} className="card" style={{ padding: "16px" }}>
+              <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+                <RepAvatar size={52}/>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                    <span className={`chip chip-${r.party.toLowerCase()}`}>{r.party}</span>
+                    <span className="chip chip-held">{r.chamber}</span>
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>{r.name}</div>
+                  <div className="label-sm">{r.state}</div>
+                </div>
+                <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--navy-3)", border: "1.5px solid var(--divider)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
+                    <path d="M1.5 5L5.5 9L12.5 1" stroke="var(--carrot)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          ))}
+          <button className="btn btn-primary" style={{ marginTop: 4 }}>These are my representatives →</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────
+   SCREEN 4 — VERIFICATION
+────────────────────────────────────────── */
+function VerifyTier1() {
+  return (
+    <div className="phone">
+      <StatusBar/>
+      <NavBar title="Confirm Pledge" showBack/>
+      <div className="scroll-area">
+        <div style={{ padding: "20px 20px 32px", display: "flex", flexDirection: "column", gap: 20 }}>
+          {/* Existing pledge summary */}
+          <div className="card" style={{ padding: 16, opacity: 0.5 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", marginBottom: 4 }}>S. 2038 — Clean Energy Transition Act</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <span className="chip chip-yes">YES</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: "var(--text)" }}>$25.00</span>
+            </div>
+          </div>
+
+          {/* Verification prompt */}
+          <div style={{ background: "var(--navy-3)", borderRadius: 16, padding: 20, borderTop: "3px solid var(--held)" }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: "50%", background: "oklch(60% 0.06 230 / 0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>📬</div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 15, color: "var(--text)" }}>Verify your address</div>
+                <div className="label-sm">Required for your first pledge</div>
+              </div>
+            </div>
+            <div className="body-sm" style={{ marginBottom: 16 }}>
+              Federal campaign finance regulations require address verification. This takes under 30 seconds via USPS.
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <input className="input-field" placeholder="Street address" style={{ fontSize: 14 }}/>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
+                <input className="input-field" placeholder="City" style={{ fontSize: 14 }}/>
+                <input className="input-field" placeholder="Zip" style={{ fontSize: 14, width: 80 }}/>
+              </div>
+            </div>
+          </div>
+
+          <button className="btn btn-primary">Verify &amp; Continue</button>
+          <div className="body-sm" style={{ textAlign: "center", fontSize: 11 }}>
+            Address is verified via USPS and never shared.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function VerifyTier2() {
+  return (
+    <div className="phone">
+      <StatusBar/>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}>
+        <div className="scroll-area">
+          <div style={{ padding: "60px 24px 32px", display: "flex", flexDirection: "column", gap: 24, alignItems: "center" }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>🪪</div>
+              <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.5px", color: "var(--text)", marginBottom: 8 }}>Verify your identity</div>
+              <div className="body-sm" style={{ maxWidth: 280, margin: "0 auto" }}>
+                Federal law requires identity verification for cumulative pledges over $50. This is a one-time process.
+              </div>
+            </div>
+
+            {/* Progress steps */}
+            <div className="card" style={{ padding: 20, width: "100%" }}>
+              {[
+                { icon: "📧", label: "Email confirmed", done: true },
+                { icon: "📬", label: "Address verified", done: true },
+                { icon: "🪪", label: "Identity verification", done: false, active: true },
+              ].map((s, i) => (
+                <div key={i} style={{ display: "flex", gap: 12, alignItems: "center", padding: "10px 0", borderBottom: i < 2 ? "1px solid var(--divider)" : "none" }}>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%",
+                    background: s.done ? "oklch(70% 0.19 52 / 0.18)" : s.active ? "var(--navy-3)" : "var(--navy-3)",
+                    border: s.active ? "1.5px solid var(--held)" : "none",
+                    display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>
+                    {s.done ? "✓" : s.icon}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: s.done ? "var(--carrot)" : s.active ? "var(--text)" : "var(--muted)" }}>
+                      {s.label}
+                    </div>
+                  </div>
+                  {s.done && <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M1.5 6L6 10.5L14.5 1.5" stroke="var(--carrot)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                </div>
+              ))}
+            </div>
+
+            <div className="body-sm" style={{ textAlign: "center" }}>
+              Powered by Stripe Identity. Your documents are encrypted and never stored on our servers.
+            </div>
+
+            <button className="btn btn-primary" style={{ marginTop: 8 }}>Verify with Stripe Identity</button>
+            <button style={{ background: "none", border: "none", color: "var(--muted)", fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>
+              Maybe later
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────
+   SCREEN 5 — USER ACCOUNT
+────────────────────────────────────────── */
+function UserAccount() {
+  const [tab, setTab] = useState("active");
+
+  const activePledges = [
+    { rep: "Maria Santos", bill: "S. 2038 — Clean Energy", direction: "YES", amount: "$25", date: "Jul 8, 2026" },
+    { rep: "James Okafor", bill: "H.R. 4521 — CHIPS Act", direction: "NO", amount: "$50", date: "Jun 12, 2026" },
+    { rep: "Linda Chen", bill: "H.R. 7732 — SS Adjustment", direction: "NO", amount: "$15", date: "Aug 2, 2026" },
+  ];
+
+  const history = [
+    { rep: "Maria Santos", bill: "H.R. 2201 — Housing Reform", direction: "YES", amount: "$40", outcome: "carrot", voteOutcome: "YES" },
+    { rep: "James Okafor", bill: "S. 1108 — Tax Cuts", direction: "NO", amount: "$30", outcome: "stick", voteOutcome: "YES" },
+    { rep: "Linda Chen", bill: "H.R. 3344 — Defense Auth.", direction: "YES", amount: "$20", outcome: "carrot", voteOutcome: "YES" },
+  ];
+
+  return (
+    <div className="phone">
+      <StatusBar/>
+      <NavBar title="My Pledges" showLogo/>
+      <div className="scroll-area">
+        <div style={{ padding: "12px 20px 0" }}>
+          {/* Totals */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+            <div className="card" style={{ padding: "12px 14px" }}>
+              <div className="label-xs" style={{ marginBottom: 4 }}>Total Carrots</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "var(--carrot)" }}>$60</div>
+              <div className="label-sm">3 resolved</div>
+            </div>
+            <div className="card" style={{ padding: "12px 14px" }}>
+              <div className="label-xs" style={{ marginBottom: 4 }}>Total Sticks</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "var(--stick)" }}>$30</div>
+              <div className="label-sm">1 resolved</div>
+            </div>
+          </div>
+
+          {/* Verification strip */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "var(--navy-3)", borderRadius: 12, padding: "10px 14px", marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 14 }}>📬</span>
+              <div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>Address verified</div>
+                <div className="label-sm">Tier 1 of 2</div>
+              </div>
+            </div>
+            <button className="btn-sm-outline" style={{ fontSize: 11 }}>Upgrade →</button>
+          </div>
+
+          {/* Tab switcher */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0, background: "var(--navy-3)", borderRadius: 10, padding: 3, marginBottom: 16 }}>
+            {["active", "history"].map(t => (
+              <button key={t} onClick={() => setTab(t)} style={{
+                padding: "8px", borderRadius: 8,
+                background: tab === t ? "var(--navy-4)" : "transparent",
+                border: "none", cursor: "pointer", fontFamily: "inherit",
+                fontSize: 13, fontWeight: 700,
+                color: tab === t ? "var(--text)" : "var(--muted)",
+                transition: "all 0.15s",
+              }}>
+                {t === "active" ? "Active Pledges" : "Pledge History"}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Content */}
+        {tab === "active" ? (
+          <div style={{ padding: "0 20px 32px", display: "flex", flexDirection: "column", gap: 10 }}>
+            {activePledges.map((p, i) => (
+              <div key={i} className="card" style={{ padding: 14 }}>
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  <RepAvatar size={40}/>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 2 }}>{p.rep}</div>
+                    <div className="label-sm" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.bill}</div>
+                  </div>
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <div style={{ fontWeight: 800, fontSize: 16, color: "var(--text)", marginBottom: 4 }}>{p.amount}</div>
+                    <span className={p.direction === "YES" ? "chip chip-yes" : "chip chip-no"}>{p.direction}</span>
+                  </div>
+                </div>
+                <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--divider)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span className="chip chip-held">Held</span>
+                  <span className="label-sm">Vote expected {p.date}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ padding: "0 20px 32px", display: "flex", flexDirection: "column", gap: 10 }}>
+            {history.map((p, i) => (
+              <div key={i} className="card" style={{ padding: 14 }}>
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                  <RepAvatar size={40}/>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: "var(--text)", marginBottom: 2 }}>{p.rep}</div>
+                    <div className="label-sm" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.bill}</div>
+                  </div>
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <div style={{ fontWeight: 800, fontSize: 16, color: p.outcome === "carrot" ? "var(--carrot)" : "var(--stick)", marginBottom: 4 }}>{p.amount}</div>
+                    <span style={{ fontSize: 18 }}>{p.outcome === "carrot" ? "🥕" : "🪄"}</span>
+                  </div>
+                </div>
+                <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--divider)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span className={p.outcome === "carrot" ? "chip chip-yes" : "chip chip-no"}>
+                    {p.outcome === "carrot" ? "Carrot" : "Stick"}
+                  </span>
+                  <span className="label-sm">Voted {p.voteOutcome} · disbursed</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <TabBar active="pledges"/>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────
+   SCREEN 6 — VOTE NOTIFICATION EMAIL
+────────────────────────────────────────── */
+function VoteEmail() {
+  return (
+    <div className="phone" style={{ background: "#f4f5f7" }}>
+      <div className="email-wrap">
+        {/* Email client header */}
+        <div style={{ background: "#fff", padding: "12px 16px", borderBottom: "1px solid #e0e2e8", flexShrink: 0 }}>
+          <div style={{ fontSize: 12, color: "#888", marginBottom: 2 }}>From: Carrot &amp; the Stick &lt;votes@carrotandthestick.com&gt;</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#111", lineHeight: 1.4 }}>
+            Santos has a vote coming up — pledge now
+          </div>
+        </div>
+
+        <div className="scroll-area" style={{ background: "#f4f5f7" }}>
+          {/* Email header */}
+          <div className="email-header">
+            <div className="nav-logo" style={{ fontSize: 20, marginBottom: 16 }}>
+              <span className="c">Carrot</span> &amp; the <span className="s">Stick</span>
+            </div>
+            <div style={{ display: "flex", gap: 14, alignItems: "center", justifyContent: "center" }}>
+              <RepAvatar size={64}/>
+              <div style={{ textAlign: "left" }}>
+                <div style={{ display: "flex", gap: 6, marginBottom: 4 }}>
+                  <span className="chip chip-d">D</span>
+                  <span className="chip chip-held">Senate</span>
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: "var(--text)" }}>Maria Santos</div>
+                <div className="label-sm">California</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Email body */}
+          <div className="email-body">
+            <div style={{ background: "#fff", borderRadius: 12, padding: 20, marginBottom: 16, border: "1px solid #e0e2e8" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#888", marginBottom: 8 }}>Upcoming Vote</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: "#0d1224", letterSpacing: "-0.3px", lineHeight: 1.3, marginBottom: 12 }}>
+                S. 2038 — Clean Energy Transition Act
+              </div>
+              <div style={{ fontSize: 14, color: "#555", lineHeight: 1.65, marginBottom: 12 }}>
+                Mandates 80% clean electricity by 2035 with federal incentives for grid upgrades. The bill includes $30B for utility-scale battery storage and offshore wind development. A nuclear energy carve-out proved contentious among environmental groups.
+              </div>
+              <div style={{ fontSize: 12, color: "#888" }}>
+                Expected vote: <strong>Jul 8, 2026</strong>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#555", marginBottom: 10, textAlign: "center" }}>
+                How do you want Santos to vote?
+              </div>
+              <div className="email-cta-row">
+                <button className="email-btn-carrot">🥕 Pledge YES</button>
+                <button className="email-btn-stick">🪄 Pledge NO</button>
+              </div>
+            </div>
+
+            <div style={{ fontSize: 11, color: "#aaa", lineHeight: 1.6, textAlign: "center", borderTop: "1px solid #e0e2e8", paddingTop: 16 }}>
+              You're receiving this because Maria Santos is your representative.<br/>
+              <a href="#" style={{ color: "#888" }}>Unsubscribe</a> · <a href="#" style={{ color: "#888" }}>Manage notifications</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────
+   STYLE GUIDE
+────────────────────────────────────────── */
+function StyleGuide() {
+  return (
+    <div style={{ width: 560, background: "var(--navy)", borderRadius: 24, padding: 32, border: "1px solid var(--divider)" }}>
+      <div style={{ marginBottom: 28 }}>
+        <div className="nav-logo" style={{ fontSize: 28 }}>
+          <span className="c">Carrot</span> &amp; the <span className="s">Stick</span>
+        </div>
+        <div className="label-sm" style={{ marginTop: 4 }}>Design System · v1.0</div>
+      </div>
+
+      {/* Colors */}
+      <div style={{ marginBottom: 28 }}>
+        <div className="label-xs" style={{ marginBottom: 14 }}>Color Tokens</div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+          {[
+            { name: "Carrot", var: "--carrot", label: "oklch(70% 0.19 52)" },
+            { name: "Stick", var: "--stick", label: "oklch(58% 0.22 18)" },
+            { name: "Held", var: "--held", label: "oklch(60% 0.06 230)" },
+            { name: "Navy Base", var: "--navy", label: "#0d1224" },
+            { name: "Card BG", var: "--card-bg", label: "#161d35" },
+            { name: "Text", var: "--text", label: "oklch(93% 0.01 240)" },
+          ].map(c => (
+            <div key={c.name}>
+              <div className="swatch" style={{ background: `var(${c.var})`, marginBottom: 6 }}/>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>{c.name}</div>
+              <div style={{ fontSize: 10, color: "var(--muted)", fontFamily: "monospace" }}>{c.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Chips */}
+      <div style={{ marginBottom: 28 }}>
+        <div className="label-xs" style={{ marginBottom: 12 }}>Vote Outcome Chips</div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <span className="chip chip-yes">YES</span>
+          <span className="chip chip-no">NO</span>
+          <span className="chip chip-absent">ABSENT</span>
+          <span className="chip chip-present">PRESENT</span>
+          <span className="chip chip-held">Held</span>
+          <span className="chip chip-d">D</span>
+          <span className="chip chip-r">R</span>
+          <span className="chip chip-i">I</span>
+        </div>
+      </div>
+
+      {/* Typography */}
+      <div style={{ marginBottom: 28 }}>
+        <div className="label-xs" style={{ marginBottom: 12 }}>Type Scale</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+          {[
+            { size: "56px / 800", label: "Amount Display", sample: "$42" },
+            { size: "22px / 800", label: "Heading", sample: "Pledge Active" },
+            { size: "17px / 700", label: "Subheading", sample: "Vote History" },
+            { size: "15px / 400", label: "Body", sample: "Mandates 80% clean electricity by 2035" },
+            { size: "12px / 600", label: "Label", sample: "CARROT POOL" },
+            { size: "10px / 700", label: "Label XS", sample: "VOTE HISTORY" },
+          ].map(t => (
+            <div key={t.label} className="type-row" style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "10px 0" }}>
+              <div>
+                <div style={{ color: "var(--text)", marginBottom: 1 }} dangerouslySetInnerHTML={{__html: `<span style="font-size:${t.size.split('/')[0].trim()};font-weight:${t.size.split('/')[1].trim()}">${t.sample}</span>`}}/>
+                <div style={{ fontSize: 10, color: "var(--muted)", fontFamily: "monospace" }}>{t.label} · {t.size}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Buttons */}
+      <div>
+        <div className="label-xs" style={{ marginBottom: 12 }}>Button Variants</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <button className="btn btn-primary" style={{ width: "100%" }}>Confirm &amp; Pay via Stripe</button>
+          <button className="btn btn-stick" style={{ width: "100%" }}>Pledge NO — Stick</button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button className="btn-sm">Pledge</button>
+            <button className="btn-sm-outline">Learn more</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────
+   MAIN APP — Design Canvas
+────────────────────────────────────────── */
+function App() {
+  return (
+    <DesignCanvas title="Carrot &amp; the Stick — Design Exploration">
+      <DCSection id="s0" title="Style Guide">
+        <DCArtboard id="a-sg" label="Color · Type · Components" width={560} height={920}>
+          <StyleGuide/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="s1" title="Screen 1 — Public Rep Dashboard">
+        <DCArtboard id="a1" label="Rep Dashboard (public)" width={375} height={812}>
+          <RepDashboard/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="s2" title="Screen 2 — Pledge Flow">
+        <DCArtboard id="a2a" label="Step 1 — Pledge Form" width={375} height={812}>
+          <PledgeForm/>
+        </DCArtboard>
+        <DCArtboard id="a2b" label="Step 2 — Confirmation" width={375} height={812}>
+          <PledgeConfirm/>
+        </DCArtboard>
+        <DCArtboard id="a2c" label="Step 3 — Success" width={375} height={812}>
+          <PledgeSuccess/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="s3" title="Screen 3 — Auth / Onboarding">
+        <DCArtboard id="a3a" label="Step 1 — Magic Link" width={375} height={812}>
+          <AuthMagicLink/>
+        </DCArtboard>
+        <DCArtboard id="a3b" label="Step 2 — Zip Code" width={375} height={812}>
+          <AuthZip/>
+        </DCArtboard>
+        <DCArtboard id="a3c" label="Step 3 — Rep Confirm" width={375} height={812}>
+          <AuthRepConfirm/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="s4" title="Screen 4 — Verification">
+        <DCArtboard id="a4a" label="Tier 1 — USPS Address" width={375} height={812}>
+          <VerifyTier1/>
+        </DCArtboard>
+        <DCArtboard id="a4b" label="Tier 2 — Stripe Identity" width={375} height={812}>
+          <VerifyTier2/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="s5" title="Screen 5 — User Account">
+        <DCArtboard id="a5" label="My Pledges" width={375} height={812}>
+          <UserAccount/>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="s6" title="Screen 6 — Vote Notification Email">
+        <DCArtboard id="a6" label="Email — Upcoming Vote" width={375} height={812}>
+          <VoteEmail/>
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+<div id="root"></div>
+</body>
+</html>
