@@ -1,15 +1,11 @@
 [build]
-  builder = "dockerfile"
+  dockerfilePath = "backend/Dockerfile"
+  watchPatterns = ["backend/**"]
 
-[[services]]
-name = "backend"
-source = "."
-dockerfile = "backend/Dockerfile"
-watchPatterns = ["backend/**"]
+[deploy]
+  healthcheckPath = "/health"
+  healthcheckTimeout = 30
+  restartPolicyType = "on_failure"
 
-[services.deploy]
-healthcheckPath = "/health"
-healthcheckTimeout = 30
-
-[services.variables]
-PORT = "8000"
+  [deploy.variables]
+    PORT = "8000"
