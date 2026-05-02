@@ -12,7 +12,6 @@ from app.models.base import Base
 from app.models.enums import Chamber
 from app.models.representatives import Representative
 
-
 # ---------------------------------------------------------------------------
 # DB fixture — SQLite in-memory, no live Supabase connection
 # ---------------------------------------------------------------------------
