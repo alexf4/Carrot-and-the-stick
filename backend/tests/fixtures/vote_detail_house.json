@@ -1,0 +1,32 @@
+{
+  "status": "OK",
+  "copyright": "Copyright (c) 2025 Pro Publica Inc.",
+  "results": {
+    "votes": {
+      "congress": 119,
+      "chamber": "House",
+      "session": 1,
+      "roll_call": 142,
+      "source": "https://clerk.house.gov",
+      "url": "https://clerk.house.gov/evs/2025/roll142.xml",
+      "bill": {
+        "bill_id": "hr1234-119",
+        "number": "H.R.1234",
+        "title": "A bill to do something important"
+      },
+      "question": "On Passage",
+      "description": "A bill to do something important",
+      "vote_type": "Passage",
+      "date": "2025-03-15",
+      "time": "14:30:00",
+      "result": "Passed",
+      "total": {"yes": 2, "no": 1, "not_voting": 1, "present": 1},
+      "positions": [
+        {"member_id": "A000001", "name": "Rep Alpha", "party": "D", "state": "VA", "vote_position": "Yes"},
+        {"member_id": "B000002", "name": "Rep Bravo", "party": "R", "state": "TX", "vote_position": "No"},
+        {"member_id": "C000003", "name": "Rep Charlie", "party": "D", "state": "CA", "vote_position": "Not Voting"},
+        {"member_id": "D000004", "name": "Rep Delta", "party": "R", "state": "FL", "vote_position": "Present"}
+      ]
+    }
+  }
+}

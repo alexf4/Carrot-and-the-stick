@@ -9,8 +9,8 @@ class ZipNotFoundError(Exception):
 
 @dataclass(frozen=True)
 class ZipInfo:
-    state: str          # 2-letter uppercase, e.g. "VA"
-    house_district: int # congressional district number
+    state: str  # 2-letter uppercase, e.g. "VA"
+    house_district: int  # congressional district number
 
 
 class ZipLookupClient(Protocol):

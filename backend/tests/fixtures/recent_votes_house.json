@@ -1,0 +1,51 @@
+{
+  "status": "OK",
+  "copyright": "Copyright (c) 2025 Pro Publica Inc.",
+  "results": {
+    "chamber": "House",
+    "offset": 0,
+    "num_results": 2,
+    "votes": [
+      {
+        "congress": 119,
+        "chamber": "House",
+        "session": 1,
+        "roll_call": 142,
+        "source": "https://clerk.house.gov",
+        "url": "https://clerk.house.gov/evs/2025/roll142.xml",
+        "vote_uri": "https://api.propublica.org/congress/v1/119/house/sessions/1/votes/142.json",
+        "bill": {
+          "bill_id": "hr1234-119",
+          "number": "H.R.1234",
+          "bill_uri": "https://api.propublica.org/congress/v1/119/bills/hr1234.json",
+          "title": "A bill to do something important",
+          "latest_action": "Passed House"
+        },
+        "description": "On Passage",
+        "question": "On Passage",
+        "vote_type": "1/2",
+        "date": "2025-03-15",
+        "time": "14:30:00",
+        "result": "Passed",
+        "total": {"yes": 220, "no": 210, "not_voting": 5, "present": 0}
+      },
+      {
+        "congress": 119,
+        "chamber": "House",
+        "session": 1,
+        "roll_call": 143,
+        "source": "https://clerk.house.gov",
+        "url": "https://clerk.house.gov/evs/2025/roll143.xml",
+        "vote_uri": "https://api.propublica.org/congress/v1/119/house/sessions/1/votes/143.json",
+        "bill": null,
+        "description": "On Motion to Table",
+        "question": "On Motion to Table",
+        "vote_type": "1/2",
+        "date": "2025-03-15",
+        "time": "15:00:00",
+        "result": "Agreed to",
+        "total": {"yes": 230, "no": 200, "not_voting": 5, "present": 0}
+      }
+    ]
+  }
+}
