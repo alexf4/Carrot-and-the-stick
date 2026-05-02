@@ -148,25 +148,32 @@ def client_no_house(sqlite_db):
     app.dependency_overrides.clear()
 
 
+@pytest.fixture()
+def client(sqlite_db):
+    """Bare client with SQLite DB — for tests that exercise validation before any DB/service call."""
+    from app.database import get_db
+
+    app.dependency_overrides[get_db] = lambda: sqlite_db
+    yield TestClient(app)
+    app.dependency_overrides.clear()
+
+
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
 
 
-def test_get_reps_missing_zip_param():
-    client = TestClient(app)
+def test_get_reps_missing_zip_param(client):
     response = client.get("/reps")
     assert response.status_code == 422
 
 
-def test_get_reps_invalid_zip_format():
-    client = TestClient(app)
+def test_get_reps_invalid_zip_format(client):
     response = client.get("/reps?zip=notazip")
     assert response.status_code == 422
 
 
-def test_get_reps_too_short_zip():
-    client = TestClient(app)
+def test_get_reps_too_short_zip(client):
     response = client.get("/reps?zip=1234")
     assert response.status_code == 422
 
