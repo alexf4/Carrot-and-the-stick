@@ -10,6 +10,8 @@ from pathlib import Path
 
 import pytest
 
+from app.models.enums import ENUM_NAMES
+
 # ---------------------------------------------------------------------------
 # Layer 1: SQLAlchemy model structure (no DB required)
 # ---------------------------------------------------------------------------
@@ -47,9 +49,7 @@ def test_all_tables_declared():
 
 
 def test_enum_types_declared():
-    from app import models  # noqa: F401 — importing registers enums
-
-    from app.models.enums import ENUM_NAMES
+    import app.models  # noqa: F401
 
     missing = REQUIRED_ENUMS - ENUM_NAMES
     assert not missing, f"Missing enum definitions: {missing}"
