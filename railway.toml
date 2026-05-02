@@ -1,0 +1,9 @@
+[build]
+  dockerfilePath = "backend/Dockerfile"
+
+[deploy]
+  healthcheckPath = "/health"
+  restartPolicyType = "on_failure"
+
+  [deploy.variables]
+    PORT = "8000"
