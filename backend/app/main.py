@@ -49,6 +49,10 @@ import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
+from dotenv import load_dotenv
+
+load_dotenv()  # loads .env from project root (searches upward from backend/)
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI
 from pydantic import BaseModel

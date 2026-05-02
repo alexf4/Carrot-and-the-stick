@@ -34,6 +34,23 @@ _PARTY_MAP = {
     "Republican": "R",
     "Independent": "I",
 }
+_STATE_ABBR = {
+    "Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR",
+    "California": "CA", "Colorado": "CO", "Connecticut": "CT", "Delaware": "DE",
+    "Florida": "FL", "Georgia": "GA", "Hawaii": "HI", "Idaho": "ID",
+    "Illinois": "IL", "Indiana": "IN", "Iowa": "IA", "Kansas": "KS",
+    "Kentucky": "KY", "Louisiana": "LA", "Maine": "ME", "Maryland": "MD",
+    "Massachusetts": "MA", "Michigan": "MI", "Minnesota": "MN", "Mississippi": "MS",
+    "Missouri": "MO", "Montana": "MT", "Nebraska": "NE", "Nevada": "NV",
+    "New Hampshire": "NH", "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY",
+    "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH", "Oklahoma": "OK",
+    "Oregon": "OR", "Pennsylvania": "PA", "Rhode Island": "RI", "South Carolina": "SC",
+    "South Dakota": "SD", "Tennessee": "TN", "Texas": "TX", "Utah": "UT",
+    "Vermont": "VT", "Virginia": "VA", "Washington": "WA", "West Virginia": "WV",
+    "Wisconsin": "WI", "Wyoming": "WY", "District of Columbia": "DC",
+    "Puerto Rico": "PR", "Virgin Islands": "VI", "Guam": "GU",
+    "American Samoa": "AS", "Northern Mariana Islands": "MP",
+}
 
 
 def _fetch_members(api_key: str, congress: int) -> list[dict]:
@@ -85,7 +102,8 @@ def _upsert(session: Session, member: dict) -> None:
     if chamber is None:
         return
 
-    state: str = member.get("state", "")
+    state_raw: str = member.get("state", "")
+    state: str = _STATE_ABBR.get(state_raw, state_raw)
     district: int | None = member.get("district") if chamber == Chamber.house.value else None
     name: str = member.get("name", "")
     party_raw: str = member.get("partyName", "")
@@ -126,12 +144,12 @@ def seed(api_key: str, congress: int, database_url: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Seed representatives table from Congress.gov")
-    parser.add_argument("--api-key", default=os.getenv("CONGRESS_API_KEY", ""))
+    parser.add_argument("--api-key", default=os.getenv("CONGRESS_GOV_API_KEY", ""))
     parser.add_argument("--congress", type=int, default=119, help="Congress number (default: 119)")
     args = parser.parse_args()
 
     if not args.api_key:
-        print("Error: set CONGRESS_API_KEY env var or pass --api-key", file=sys.stderr)
+        print("Error: set CONGRESS_GOV_API_KEY env var or pass --api-key", file=sys.stderr)
         sys.exit(1)
 
     database_url = os.environ.get("DATABASE_URL", "")
