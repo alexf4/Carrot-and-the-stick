@@ -5,7 +5,15 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist'] },
+  {
+    // Exclude auto-generated directories and files:
+    // - .next/  : Next.js build output and generated types (next dev / next build)
+    // - dist/   : generic build output
+    // - next-env.d.ts : Next.js auto-generated ambient type file; uses
+    //   triple-slash references that @typescript-eslint/triple-slash-reference
+    //   would flag as errors.
+    ignores: ['.next', 'dist', 'next-env.d.ts'],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
