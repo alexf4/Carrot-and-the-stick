@@ -49,16 +49,18 @@ import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
-from dotenv import load_dotenv
-
-load_dotenv()  # loads .env from project root (searches upward from backend/)
-
 from apscheduler.schedulers.background import BackgroundScheduler
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from pydantic import BaseModel
 
 from app.routers.admin import router as admin_router
 from app.routers.reps import router as reps_router
+
+# load_dotenv() is called after all imports to satisfy flake8 E402. This is
+# safe because env reads (CONGRESS_API_KEY etc.) happen at lifespan startup
+# time — after this module is fully loaded — not at import time.
+load_dotenv()  # loads .env from project root (searches upward from backend/)
 
 logger = logging.getLogger(__name__)
 
